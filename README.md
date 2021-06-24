@@ -50,9 +50,9 @@ Optional but helpful tools
 - vSphere Cluster with DRS and HA Enabled
 - Network requirements to be discussed.  Requirements differ between NSX-T and Non-NSX-T envrionments
     https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-9E6B00BB-DB04-4203-A3E5-97A21B610015.html
-- Create Subscribed content library pointing to 
-## Tanzu Service Installation https://wp-content.vmware.com/v2/latest/lib.json
+- Create Subscribed content library pointing to https://wp-content.vmware.com/v2/latest/lib.json
 
+## Tanzu Service Installation
 
 Covered in official Documentation
 https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-21ABC792-0A23-40EF-8D37-0367B483585E.html
