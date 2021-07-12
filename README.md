@@ -10,9 +10,9 @@ Assumptions:
 
 ## Quicklinks
 
-1. [Working with TKG CLI](#working-with-tkg-cli)
-2. [Working with the TKG Management cluster](#working-with-the-tkg-management-cluster)
-3. [Creating TKG Workload clusters](#creating-tkg-workload-clusters)
+1. [vSphere Infrastructure Prepration](#vspher-infrastructure-preparation)
+2. [Working with the TKG Supervisor Cluster](#working-with-the-supervisor-cluster)
+3. [Working with vSphere Namespaces](#working-with-vsphere-namespaces)
 4. [Working with TKG Workload clusters](#working-with-tkg-workload-clusters)
 5. [Deploying test applications]()
 
@@ -26,7 +26,6 @@ https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-152
 
 
 ## Jumpbox Requirements
-
 
 During a POC it's best practice to have a jumpbox with common developer tools installed.  This jumpbox can be Linux, MacOS or Windows.  You can use your own desktop as long as you have connectivity to the environment where vSphere 7 with Tanzu is deployed.  The jumpbox can also be a VM or VDI desktop if desired.
 
@@ -42,6 +41,7 @@ Optional but helpful tools
 - SSH / SCP Tools
 - Grep or similar
 
+
 ## vSphere Infrastructure Prepration
 
 - vCenter >= 7.0u2
@@ -49,9 +49,11 @@ Optional but helpful tools
 - 2-3 ESXi hosts with >=96 GB of Ram each
 - 2.5 TB shared storage for ESXi cluster (Block, vSAN, NFS)
 - vSphere Cluster with DRS and HA Enabled
+- Storage Class created (can be tag based)
 - Network requirements to be discussed.  Requirements differ between NSX-T and Non-NSX-T envrionments
     https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-9E6B00BB-DB04-4203-A3E5-97A21B610015.html
-- Create Subscribed content library pointing to https://wp-content.vmware.com/v2/latest/lib.json
+- Create a subscribed content library to pull TKG node OVAs https://wp-content.vmware.com/v2/latest/lib.json
+
 
 ## Tanzu Service Installation
 
@@ -84,7 +86,6 @@ When operators or developers need to authenticate to Tanzu to create or access T
 9. Developer may create a TKG workload cluster using self-service in their vsphere namespaces (optional)
 10. Developer will authenticate and change context to TKG workload clusters and deploy applications
 
-
 ### Determine the Supervisor Cluster Kubernetes API Address
 
 Each Supervisor Cluster has its own load-balanced VIP for the Kubernetes API.  This VIP is currently serviced by NSX-T, NST Advanced Load Balancer (AVI) or HA Proxy depending on how it was installed.  To find the Supervisor Cluster API VIP do one of the following:
@@ -113,6 +114,7 @@ The Supervisor Cluster API hosts a webpage you can use to directly download the 
 
     ![alt text](/assets/download.png)
 
+
 ## Working with vSphere Namespaces
 
 vSphere Namespaces are created on the Supervisor Cluster.  You can use vSphere Namespaces as a boundry for application, application teams, lines of businesses or however you want separate permissions.
@@ -138,6 +140,42 @@ To authenticate to the supervisor use the kubectl with the kubectl-vsphere plugi
 You will the supervisor cluster context as well as any vSphere namespaces the account you logged in with has access to
 
    ![alt text](/assets/vsphere-login.png)
+
+### Namespaces and Contexts
+
+In the screenshot from the former section you will see a number of contexts listed.
+
+- 10.0.103.20 - This is the supervisor cluster context.  You can view system namespaces, cluster API objects, controllers and pods.  You cannot create/delete or change most objects in the supervisor cluster context.  
+- app01, demo-app-01, infra-app - You can change your context into any of the namespaces you have access to and create TKG clusters or deploy vSphere Pods (NSX-T required for vSphere Pods)
+
+Change context to vSphere namespace 
+
+`kubectl config use-context demo-app-01`
+
+### Important kubectl commands to explore Namespace
+
+View Tanzu Kubernetes Grid Clusters
+`kubectl get tkc`
+
+View Tanzu Kubernetes Release versions available for use
+`kubectl get tkr`
+
+View VM Classes avaialbe in selected vSphere namespace
+`kubectl get vmclassbinding`
+
+View All VM Classes defined
+`kubectl get vmclass`
+
+View Storageclass available
+`kubectl get sc`
+
+View Cluster API Objects
+`kubectl get ms`
+`kubectl get md`
+`kubectl get ma`
+`kubectl get vm`
+
+
 
 - Set TKG mangement cluster 
     `tkg set mc tkg-mgmt` will set the mc context for the TKG cli.  Any further TKG commands you run will be executed by the selected TKG management cluster.
