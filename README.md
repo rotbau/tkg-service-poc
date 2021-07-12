@@ -10,11 +10,11 @@ Assumptions:
 
 ## Quicklinks
 
-1. [vSphere Infrastructure Prepration](#vspher-infrastructure-preparation)
-2. [Working with the TKG Supervisor Cluster](#working-with-the-supervisor-cluster)
+1. [vSphere Infrastructure Prepration](#vsphere-infrastructure-preparation)
+2. [Working with the Supervisor Cluster](#working-with-the-supervisor-cluster)
 3. [Working with vSphere Namespaces](#working-with-vsphere-namespaces)
-4. [Working with TKG Workload clusters](#working-with-tkg-workload-clusters)
-5. [Deploying test applications]()
+4. [Creating TKG Workload Clusters](#creating-tkg-workload-clusters)
+5. [Working with TKG Workload Clusters](#working-with-tkg-workload-clusters)
 
 
 ## Documentation
@@ -61,7 +61,7 @@ Covered in official Documentation
 https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-21ABC792-0A23-40EF-8D37-0367B483585E.html
 
 
-## Working with the TKG Supervisor Cluster
+## Working with the Supervisor Cluster
 
 When you enable Tanzu Kubernetes Grid Service (TKGs) in vSphere 7 a new Namespaces resource object is created along with the Supervisor cluster.  The Supervisor cluster is a group of 3 virtual machines running Kubernetes and is the control plane for the vSphere Cluster where TKGs was enabled.  
 
@@ -135,7 +135,7 @@ https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-177
 
 To authenticate to the supervisor use the kubectl with the kubectl-vsphere plugin.  You can enter `kubectl vsphere login` without anything else to see all of the parameters
 
-`kubectl vsphere login --server [supervisor cluster ip] -u administrator@vsphere.local --insecure-skip-tls-verify`
+`kubectl vsphere login --server {supervisor cluster ip} -u administrator@vsphere.local --insecure-skip-tls-verify`
 
 You will the supervisor cluster context as well as any vSphere namespaces the account you logged in with has access to
 
@@ -176,91 +176,70 @@ View Cluster API Objects
 `kubectl get vm`
 
 
+## Creating TKG Workload Clusters
 
-- Set TKG mangement cluster 
-    `tkg set mc tkg-mgmt` will set the mc context for the TKG cli.  Any further TKG commands you run will be executed by the selected TKG management cluster.
+Tanzu Kubernetes Grid (TKG) workload clusters are where you development teams will deploy applications.  TKG clusters are created inside vSphere Namespaces and their LCM is managed via ClusterAPI and the VMware operators.  TKG clusters are created using simple YAML files.
 
-    ![alt text](/assets/tkg-set-mc.png)
+### Create TKG cluster from manifest
 
-- View TKG workload clusters managed by selected TKG management cluster
-    `tkg get clusters` or `tkg get clusters --include-management-cluster`
+Change into vSphere Namespace 
 
-    ![alt text](/assets/tkg-set-mc.png)
+`kubectl config use-context demo-app-01`
+`kubectl apply -f /manifests/cluster01.yaml`
 
-### Accessing TKG managemnt cluster nodes using kubectl
+### Examine cluster progress and objects
 
-By default during installation of the Management cluster, the credentials are added to the jumpbox kubeconfig file (~/.kube/config).  You can access the management cluster nodes using kubectl.
+`kubectl get tkc`
+`kubectl describe tkc {clustername}`
 
-- Set kubectl cli context
-    `kubectl config use-context [mgmt-cluster-name]`
+https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-6B21C37B-91ED-4218-B7B8-C40417ADBF8A.html
 
-example for tkg-mgmt management cluster name
 
-    `kubectl config use-context tkg-mgmt-admin@tkg-mgmt`
+## Working with TKG Workload Clusters
 
-    ![alt text](/assets/kubectl-config.png)
+### Scale TKG cluster
 
-- View nodes
-    `kubectl get nodes`
+`kubectl config use-context demo-app-01`
+`kubectl get tkc cluster01` - view current number of control-plane and worker nodes
+`kubectl edit tkc cluster01`
 
-    ![alt text](/assets/kubectl-get-nodes.png)
+Locate the `spec.topology.controlPlane.count` or `spec.topology.workers.count` section and edit the number of nodes as desired
 
-- View namespaces
-    `kubectl get ns`
+```
+ControlPlane:
+    count: 3
+```
+```
+workers:
+    count: 4
+```
 
-    ![alt text](/assets/kubectl-get-ns.png)
+### Delete TKG cluster
 
-- View all pods
-    `kubectl get pods -A`
+`kubectl delete tkc {clustername}`
 
-- View pods in a specific namespace
-    `kubectl get pods -n kube-system`
+### Upgrade TKG cluster
 
-## Creating TKG Workload clusters
+Determine TKG versions available
+`kubectl get tkr`
 
-Once you have your TKG management cluster created you can create TKG workload clusters for your applications.  You can leverage the TKG cli to create clusters.
+Edit TKG Cluster deployment
 
-- Set TKG management cluster if you have multiple management clusters.  Ignore if you only have a single TKG management cluster
-- Create TKG cluster from dev plan (single control plane node and single worker node)
+`kubectl get tkc`
+`kubectl edit tkc cluster01 -n demo-app-01`
 
-    `tkg create cluster test-cluster -p dev --vsphere-controlplane-endpoint 172.31.3.80`
+Edit the version and full version string in the mainifest
 
-    *note the controlplane IP is an IP address from the same dhcp network that your nodes are deployed on but outside the dhcp scope.  This IP is used by kube-vip to provide a reliable IP to the workload clusters kubernetes API*
-
-    ![alt text](/assets/tkg-create-cluster.png)
-
-- Create a TKG cluster from prod plan with custom node size and number of worker nodes (3 control plane nodes and workers based on command line input)
-
-    `tkg create cluster test-cluster -p prod --controlplane-size large -w 10 --worker-size extra-large --vsphere-control-endpoint 172.31.3.80`
-
-- Pre-configured node sizes
-    - small = Cpus: 2, Memory: 2048, Disk: 20
-    - medium = Cpus: 2, Memory: 4096, Disk: 40
-    - large = Cpus: 2, Memory: 8192, Disk: 40
-    - extra-large = Cpus: 4, Memory: 16384, Disk: 80
-
-## Working with TKG Workload clusters
-
-### Exporting TKG workload cluster credentials
-
-1. Get credentials to workload cluster for the first time.  You can either have the credentials merged into the default kubeconfig file in ~/.kube/config or have it exported to a separate file.
-
-**Merge credentials to existing ~/.kube/config**
-
-`tkg get credentials test-cluster`
-
-**Export credentials to separate kubeconfig file**
-
-`tkg get credentials test-cluster --kubeconfig tkgkubeconfig`  
-**Note:** if you export to separate file you need to specify the kubeconfig file on all kubectl commands `kubecctl --kubeconfig tkgkubeconfig {command}`
-
-### Accessing TKG workload cluster using kubectl
-
-1. Set kubectl context to workload cluster
-`kubectl config set-context test-cluster`
-2. View nodes
-`kubectl get nodes`
-3. View namespaces
-`kubectl get ns`
-4. View Pods
-`kubectl get pods` or `kubectl get pods -A` or `kubectl get pods -n {namespace}`
+```
+spec:
+  distribution:
+    fullVersion: v1.17.8+vmware.1-tkg.1.5417466
+    version: v1.17.8
+```
+to
+```
+spec:
+  distribution:
+    fullVersion: null
+    version: v1.20
+```
