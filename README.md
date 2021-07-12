@@ -15,7 +15,7 @@ Assumptions:
 3. [Working with vSphere Namespaces](#working-with-vsphere-namespaces)
 4. [Creating TKG Workload Clusters](#creating-tkg-workload-clusters)
 5. [Working with TKG Workload Clusters](#working-with-tkg-workload-clusters)
-6. [Deploy Test Application]()
+6. [Deploy Test Applications](deploy-test-applications)
 
 
 ## Documentation
@@ -266,7 +266,7 @@ Use the `kubectl vsphere login` command to log into TKG workload clusters.  If y
 `kubectl get pods -A`
 
 
-## Deploy Test Application
+## Deploy Test Applications
 
 ### Kuard
 
