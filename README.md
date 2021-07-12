@@ -10,7 +10,7 @@ Assumptions:
 
 ## Quicklinks
 
-1. [vSphere Infrastructure Prepration](#vsphere-infrastructure-preparation)
+1. [vSphere Infrastructure Prepration](#vsphere-infrastructure-prepration)
 2. [Working with the Supervisor Cluster](#working-with-the-supervisor-cluster)
 3. [Working with vSphere Namespaces](#working-with-vsphere-namespaces)
 4. [Creating TKG Workload Clusters](#creating-tkg-workload-clusters)
@@ -268,3 +268,56 @@ Use the `kubectl vsphere login` command to log into TKG workload clusters.  If y
 
 ## Deploy Test Application
 
+### Kuard
+
+Simple test application.  From Joe Beda's "Kubernetes Up and Running"
+
+Run as Pod
+```
+kubectl run --restart=Never --image=gcr.io/kuar-demo/kuard-amd64:blue kuard
+kubectl port-forward kuard 8080:8080
+```
+
+Deployment (3 replicas)
+```
+kubectl apply -f kuard/kuard.yaml
+```
+
+### Busybox
+
+Deploy Pod
+```
+kubectl apply -f busybox/busybox.yaml
+```
+
+Run Pod
+```
+kubectl run busybox --image=busybox:1.28 -- sleep 3600
+```
+
+### Tinytools
+
+Simple pod that includes ping, curl, wget, traceroute commands
+
+Deploy Pod
+```
+kubectl apply -f tinytools/tinytools.yaml
+```
+
+Run as Pod
+```
+kubectl run tinytools  --image=docker.io/giantswarm/tiny-tools -- sleep 36000
+```
+
+Exec into Pod
+```
+kubectl exec -ti tinytools -- sh
+```
+
+### Nginx
+
+Simple Nginx deployment.  2 replicas, service type LoadBalancer
+```
+kubectl apply -f nginx/nginx.yaml
+```
+Yon get the nginx service IP using `kubectl get svc`
