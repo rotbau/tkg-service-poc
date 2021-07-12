@@ -15,6 +15,7 @@ Assumptions:
 3. [Working with vSphere Namespaces](#working-with-vsphere-namespaces)
 4. [Creating TKG Workload Clusters](#creating-tkg-workload-clusters)
 5. [Working with TKG Workload Clusters](#working-with-tkg-workload-clusters)
+6. [Deploy Test Application]()
 
 
 ## Documentation
@@ -126,7 +127,7 @@ https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-177
 1. Select the vSphere cluster with Tanzu enabled in the left pane
 2. Select `Namespaces` from the right horizontal menu
 3. Click `New Namespace`
-4. Select the vSphere cluster with Tanzu enable and give the namespace a name using lowercase letters and numbers.
+4. Select the vSphere cluster with Tanzu enable and give the namespace a name using lowercase letters and numbers (i.e app01)
 5. Follow the documentation to set permissions, storageclass, resource limits and VM images.
 
     ![alt text](/assets/namespaces.png)
@@ -184,8 +185,8 @@ Tanzu Kubernetes Grid (TKG) workload clusters are where you development teams wi
 
 Change into vSphere Namespace 
 
-`kubectl config use-context demo-app-01`
-`kubectl apply -f /manifests/cluster01.yaml`
+`kubectl config use-context app01`
+`kubectl apply -f /manifests/tkg-app-01.yaml`
 
 ### Examine cluster progress and objects
 
@@ -199,9 +200,9 @@ https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-6B2
 
 ### Scale TKG cluster
 
-`kubectl config use-context demo-app-01`
-`kubectl get tkc cluster01` - view current number of control-plane and worker nodes
-`kubectl edit tkc cluster01`
+`kubectl config use-context app01`
+`kubectl get tkc tkg-app-01` - view current number of control-plane and worker nodes
+`kubectl edit tkc tkg-app-01`
 
 Locate the `spec.topology.controlPlane.count` or `spec.topology.workers.count` section and edit the number of nodes as desired
 
@@ -226,7 +227,7 @@ Determine TKG versions available
 Edit TKG Cluster deployment
 
 `kubectl get tkc`
-`kubectl edit tkc cluster01 -n demo-app-01`
+`kubectl edit tkc tkg-app-01 -n app01`
 
 Edit the version and full version string in the mainifest
 
@@ -243,3 +244,27 @@ spec:
     fullVersion: null
     version: v1.20
 ```
+
+https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-A7A0BC51-F49D-4E08-B4DD-782D84CB3762.html#GUID-A7A0BC51-F49D-4E08-B4DD-782D84CB3762
+
+### Authenticating to TKG Workload cluster
+
+Use the `kubectl vsphere login` command to log into TKG workload clusters.  If your user has `edit` in the vsphere namespace you will automatically mapped to `cluster-admin` role in the TKG Workload cluster.  If you have `view` you will need to map your user or group to a Kubernetes role.
+
+`kubectl vsphere login --server 10.0.103.20 -u administrator@vsphere.local --insecure-skip-tls-verify --tanzu-kubernetes-cluster-name {clustername} --tanzu-kubernetes-cluster-namespace {cluster namespace}`
+
+   ![alt text](/assets/tkg-login.png)
+
+### Change context to TKG Workload cluster
+
+`kubectl config use-context tkg-app-01`
+
+### Explore TKG Workload cluster
+
+`kubectl get nodes`
+`kubectl get ns`
+`kubectl get pods -A`
+
+
+## Deploy Test Application
+
