@@ -195,6 +195,11 @@ Change into vSphere Namespace
 
 https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-6B21C37B-91ED-4218-B7B8-C40417ADBF8A.html
 
+### Apply PSP to TKG cluster after creation
+
+TKG ships with Pod Security Policies enabled so before deploying application you need to bind users to a PSP.  Here we will bind all authenticated users to the vmware-system-privileged PSP.
+
+`kubectl create clusterrolebinding default-tkg-admin-privileged-binding --clusterrole=psp:vmware-system-privileged --group=system:authenticated`
 
 ## Working with TKG Workload Clusters
 
