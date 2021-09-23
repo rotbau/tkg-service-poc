@@ -236,9 +236,15 @@ You will the see the supervisor cluster context as well as any vSphere namespace
 
 ### Explore TKG Workload cluster
 
-```kubectl get nodes```
-```kubectl get ns```
-```kubectl get pods -A```
+```
+kubectl get nodes
+```
+```
+kubectl get ns
+```
+```
+kubectl get pods -A
+```
 
 ### Apply PSP to TKG cluster after creation
 
@@ -251,9 +257,13 @@ You can also apply from mainifest
 
 ### Scale TKG cluster
 
-```kubectl config use-context app01```
+```
+kubectl config use-context app01
+```
 `kubectl get tkc tkg-app-01` - view current number of control-plane and worker nodes
-```kubectl edit tkc tkg-app-01```
+```
+kubectl edit tkc tkg-app-01
+```
 
 Locate the `spec.topology.controlPlane.count` or `spec.topology.workers.count` section and edit the number of nodes as desired
 
@@ -277,8 +287,12 @@ Determine TKG versions available
 
 Edit TKG Cluster deployment
 
-```kubectl get tkc```
-```kubectl edit tkc tkg-app-01 -n app01```
+```
+kubectl get tkc
+```
+```
+kubectl edit tkc tkg-app-01 -n app01
+```
 
 Edit the version and full version string in the mainifest
 
