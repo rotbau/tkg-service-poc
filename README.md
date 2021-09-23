@@ -216,7 +216,7 @@ When cluster status phase is `running` the cluster creation is complete
 
 ### Authenticate to TKG Workload Cluster
 
-Once the cluster phase is running, Use the `kubectl vsphere login` command to log into TKG workload cluster.  If your user has `edit` in the vsphere namespace you will automatically mapped to `cluster-admin` role in the TKG Workload cluster.  If you have `view` you will someone with admin rights on the cluster to map your user/group to a  Kubernetes role.  See `manifests/cluster-edit-role-binding.yaml` for examples.
+Once the cluster phase is running, Use the `kubectl vsphere login` command to log into TKG workload cluster.  If your user has `edit` in the vsphere namespace you will automatically mapped to `cluster-admin` role on the TKG Workload cluster.  If you have `view` you will need someone with admin rights on the cluster to map your user/group to a  Kubernetes role.  See `manifests/cluster-edit-role-binding.yaml` for examples.
 
 `kubectl vsphere login --server {supervisor cluster ip} -u administrator@vsphere.local --insecure-skip-tls-verify --tanzu-kubernetes-cluster-namespace {cluster namespace} --tanzu-kubernetes-cluster-name {clustername}`
 
