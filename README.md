@@ -1,4 +1,4 @@
-# TKG POC Guide
+# Tanzu Kubernetes Service on vSphere 7 POC Guide
 This guide covers some basic POC pre-requisites and general setup for Tanzu Kubernetes Grid proof of concept testing using the integrated TKG service on Vsphere 7.
 
 Assumptions:
@@ -19,7 +19,6 @@ Assumptions:
 
 
 ## Documentation
-
 
 This POC guide is meant to supplement the official VMware documentation.  Always consult the latest VMware documentation.
 
@@ -67,7 +66,7 @@ https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-21A
 1. NSX-T, NSX Advanced Load Balnacer (AVI) or HA Proxy base install
 2. VI Admin / Operator enables Workload Management on vSphere Cluster
 3. VI Admin / Operator creates a vsphere namespace for application, developement team, LOB, etc
-4. VI Admin / Operator configures rbac, storage policy, resource limits (optional) on the vsphere cluster namespace
+4. VI Admin / Operator configures rbac, storage policy, vm classes allowed and resource limits (optional) on the vsphere cluster namespace
 5. VI Admin / Operator may create a TKG workload cluster for development teams in their namespace or simply hand off the namespace to the team for self-service TKG cluster creation
 6. VI Admin / Operator will invite development team to access their configured namespace by sending them the link to the supervisor cluster API IP, vsphere namespace(s) and any TKG cluster(s) created for them
 7. Developer team will access supervisor cluster landing page and download kubectl and vshphere plugins for their developement environment OS
@@ -77,7 +76,7 @@ https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-21A
 
 ### Determine the Supervisor Cluster Kubernetes API Address
 
-Each Supervisor Cluster has its own load-balanced VIP for the Kubernetes API.  This VIP is currently serviced by NSX-T, NST Advanced Load Balancer (AVI) or HA Proxy depending on how it was installed.  To find the Supervisor Cluster API VIP do one of the following:
+Each Supervisor Cluster has its own load-balanced VIP for the Kubernetes API.  This VIP is currently serviced by NSX-T, NSX Advanced Load Balancer (AVI) or HA Proxy depending on how it was installed.  To find the Supervisor Cluster API VIP do one of the following:
 
 - Option 1: Through Workload Management View
     - vCenter -> Menu -> Workload Management -> Clusters tab
@@ -105,7 +104,7 @@ The Supervisor Cluster API hosts a webpage you can use to directly download the 
 
 ## The Supervisor Cluster
 
-Once you enable Tanzu Kubernetes Grid Service (TKGs) in vSphere 7 a new Namespaces resource object is created along with the Supervisor cluster.  The Supervisor cluster is a group of 3 virtual machines running Kubernetes and is the control plane for the vSphere Cluster where TKGs was enabled.  
+Once you enable Tanzu Kubernetes Grid Service (TKGs) in vSphere 7 a new Namespaces resource object is created along with the Supervisor cluster.  The Supervisor cluster is a group of 3 virtual machines running Kubernetes and is the control plane for the vSphere Cluster where Tanzu was enabled.  
 
 - One Supervisor cluster per vSphere cluster that has Workload Management (Tanzu) enabled (as of 7.0u2
 - Hosts vSphere namespaces which provide rbac, policy and resource allocations for developer teams
@@ -113,7 +112,7 @@ Once you enable Tanzu Kubernetes Grid Service (TKGs) in vSphere 7 a new Namespac
 - VM Service, Network Service and Storage Service Operators
 - Considered part of the infrastructure
 
-When operators or developers need to authenticate to Tanzu to create or access Tanzu Kubernetes Grid clusters they will authenticate to the supervisor cluster API for the cluster they are working with.  The Supervisor cluster uses Identity souces configured in vCenter SSO to provide Kubernetes authentication.
+When operators or developers need to authenticate to Tanzu to create or access Tanzu Kubernetes Grid clusters they will authenticate to the supervisor cluster API VIP associated with namespace or ESXi cluster they are working with.  The Supervisor cluster uses Identity souces configured in vCenter SSO to provide Kubernetes authentication.
 
 ## Working with vSphere Namespaces
 
@@ -123,9 +122,9 @@ https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-177
 
 ### High Level Workflow
 1. Infrastructure Operator creates vSphere Namespace in vCenter UI
-2. Developer authenticates to the Supervisor Cluster via kubectl cli
-3. Developer changes context to the desired vSphere Namespace via kubectl cli
-4. Developer creates Tanzu Kubernetes Grid (TKG) workload cluster using kubectl and cluster.yaml
+2. Developer/Opertator authenticates to the Supervisor Cluster via kubectl cli
+3. Developer/Opertator changes context to the desired vSphere Namespace via kubectl cli
+4. Developer/Opertator creates Tanzu Kubernetes Grid (TKG) workload cluster using kubectl and cluster spec yaml
 5. Developer authenticates to new TKG cluster
 6. Developer changes kubectl context to TKG cluster and deploys applications
 
@@ -135,7 +134,7 @@ https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-177
 2. Select `Namespaces` from the right horizontal menu
 3. Click `New Namespace`
 4. Select the vSphere cluster with Tanzu enable and give the namespace a name using lowercase letters and numbers (i.e app01)
-5. Follow the documentation to set permissions, storageclass, resource limits and VM images.
+5. Follow the documentation to set permissions, storageclass, resource limits and VM images used for TKG clusters
 
     ![alt text](/assets/namespaces.png)
 
@@ -166,7 +165,7 @@ Change context to vSphere namespace
 ### Important kubectl commands to explore Namespace
 
 View Tanzu Kubernetes Grid Clusters
-`kubectl get tkc`
+`kubectl get tkc` or `kubectl get tkc -A`
 
 View Tanzu Kubernetes Release versions available for use
 `kubectl get tkr`
@@ -217,6 +216,8 @@ Once the cluster status is Running, Use the `kubectl vsphere login` command to l
 alternately you can use the `/manifests/cluster-auth.sh` script.  Edit the script with the appropriate supervisor cluster control plane IP and username.  Supply the TKG cluster namespace and TKG clustername when exectuting the script.
 
 ` ./cluster-auth.sh app01 tkg-app-01`
+
+You can determine your supervisor cluster control plane IP [here](#Determine the Supervisor Cluster Kubernetes API Address)
 
 You will the see the supervisor cluster context as well as any vSphere namespaces the account you logged in with has access to
 
