@@ -260,7 +260,7 @@ You can also apply from mainifest
 ```
 kubectl config use-context app01
 ```
-`kubectl get tkc tkg-app-01` - view current number of control-plane and worker nodes
+kubectl get tkc tkg-app-01 - view current number of control-plane and worker nodes
 ```
 kubectl edit tkc tkg-app-01
 ```
