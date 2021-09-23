@@ -323,7 +323,7 @@ Simple test application.  From Joe Beda's "Kubernetes Up and Running"
 
 Deployment (3 replicas)
 ```
-kubectl apply -f kuard/kuard.yaml
+kubectl apply -f /manifests/kuard/kuard.yaml
 ```
 
 Run as Pod
@@ -336,7 +336,7 @@ kubectl port-forward kuard 8080:8080
 
 Deploy Pod
 ```
-kubectl apply -f busybox/busybox.yaml
+kubectl apply -f /manifests/busybox/busybox.yaml
 ```
 
 Run Pod
@@ -350,7 +350,7 @@ Simple pod that includes ping, curl, wget, traceroute commands
 
 Deploy Pod
 ```
-kubectl apply -f tinytools/tinytools.yaml
+kubectl apply -f /manifests/tinytools/tinytools.yaml
 ```
 
 Run as Pod
@@ -367,6 +367,6 @@ kubectl exec -ti tinytools -- sh
 
 Simple Nginx deployment.  2 replicas, service type LoadBalancer
 ```
-kubectl apply -f nginx/nginx.yaml
+kubectl apply -f /manifests/nginx/nginx.yaml
 ```
 Yon get the nginx service IP using `kubectl get svc`
