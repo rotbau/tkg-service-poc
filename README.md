@@ -11,11 +11,11 @@ Assumptions:
 ## Quicklinks
 
 1. [vSphere Infrastructure Prepration](#vsphere-infrastructure-prepration)
-2. [Working with the Supervisor Cluster](#working-with-the-supervisor-cluster)
+2. [Working with the Supervisor Cluster](#the-supervisor-cluster)
 3. [Working with vSphere Namespaces](#working-with-vsphere-namespaces)
 4. [Creating TKG Workload Clusters](#creating-tkg-workload-clusters)
 5. [Working with TKG Workload Clusters](#working-with-tkg-workload-clusters)
-6. [Deploy Test Applications](deploy-test-applications)
+6. [Deploy Test Applications](#deploying-test-applications)
 
 
 ## Documentation
@@ -102,6 +102,7 @@ The Supervisor Cluster API hosts a webpage you can use to directly download the 
 
     ![alt text](/assets/download.png)
 
+
 ## The Supervisor Cluster
 
 Once you enable Tanzu Kubernetes Grid Service (TKGs) in vSphere 7 a new Namespaces resource object is created along with the Supervisor cluster.  The Supervisor cluster is a group of 3 virtual machines running Kubernetes and is the control plane for the vSphere Cluster where Tanzu was enabled.  
@@ -113,6 +114,7 @@ Once you enable Tanzu Kubernetes Grid Service (TKGs) in vSphere 7 a new Namespac
 - Considered part of the infrastructure
 
 When operators or developers need to authenticate to Tanzu to create or access Tanzu Kubernetes Grid clusters they will authenticate to the supervisor cluster API VIP associated with namespace or ESXi cluster they are working with.  The Supervisor cluster uses Identity souces configured in vCenter SSO to provide Kubernetes authentication.
+
 
 ## Working with vSphere Namespaces
 
@@ -144,7 +146,7 @@ To authenticate to the supervisor use the kubectl cli along with the kubectl-vsp
 
 `kubectl vsphere login --server {supervisor cluster ip} -u administrator@vsphere.local --insecure-skip-tls-verify`
 
-You can determine your supervisor cluster control plane IP [here](#Determine the Supervisor Cluster Kubernetes API Address)
+You can determine your supervisor cluster control plane IP [here](#determine-the-supervisor-cluster-kubernetes-api-address)
 
 alternately you can use the `sc-auth.sh` script in the `/manifests` directory.  Edit the script with the appropriate supervisor cluster control plane IP and username.
 
@@ -217,7 +219,7 @@ alternately you can use the `/manifests/cluster-auth.sh` script.  Edit the scrip
 
 ` ./cluster-auth.sh app01 tkg-app-01`
 
-You can determine your supervisor cluster control plane IP [here](#Determine the Supervisor Cluster Kubernetes API Address)
+You can determine your supervisor cluster control plane IP [here](#Determine-the-Supervisor-Determine-the-Supervisor-Cluster-Kubernetes-API-Address)
 
 You will the see the supervisor cluster context as well as any vSphere namespaces the account you logged in with has access to
 
@@ -292,7 +294,7 @@ spec:
 https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-6B21C37B-91ED-4218-B7B8-C40417ADBF8A.html
 
 
-## Deploy Test Applications
+## Deploying Test Applications
 
 ### Kuard
 
