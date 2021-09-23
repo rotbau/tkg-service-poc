@@ -15,8 +15,7 @@ spec:
         app: kuard
     spec:
       containers:
-      - image: gcr.io/kuar-demo/kuard-amd64:3
-
+      - image: gcr.io/kuar-demo/kuard-amd64:1
         name: kuard
 ---
 apiVersion: v1
@@ -33,4 +32,4 @@ spec:
   selector:
     app: kuard
   sessionAffinity: None
-  type: ClusterIP
+  type: LoadBalancer            # ClusterIP NodePort LoadBalancer

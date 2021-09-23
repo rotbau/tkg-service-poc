@@ -46,21 +46,33 @@ Optional but helpful tools
 ## vSphere Infrastructure Prepration
 
 - vCenter >= 7.0u2
-- ESXi >= 7.0u2
+- ESXi >= 7.0u1
 - 2-3 ESXi hosts with >=96 GB of Ram each
 - 2.5 TB shared storage for ESXi cluster (Block, vSAN, NFS)
 - vSphere Cluster with DRS and HA Enabled
 - Storage Class created (can be tag based)
 - Network requirements to be discussed.  Requirements differ between NSX-T and Non-NSX-T envrionments
     https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-9E6B00BB-DB04-4203-A3E5-97A21B610015.html
-- Create a subscribed content library to pull TKG node OVAs.  
-    Subscribed library URL https://wp-content.vmware.com/v2/latest/lib.json
+- Create a subscribed content library to pull TKG node OVAs https://wp-content.vmware.com/v2/latest/lib.json
 
 
 ## Tanzu Service Installation
 
 Covered in official Documentation
 https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-21ABC792-0A23-40EF-8D37-0367B483585E.html
+
+
+## Working with the Supervisor Cluster
+
+When you enable Tanzu Kubernetes Grid Service (TKGs) in vSphere 7 a new Namespaces resource object is created along with the Supervisor cluster.  The Supervisor cluster is a group of 3 virtual machines running Kubernetes and is the control plane for the vSphere Cluster where TKGs was enabled.  
+
+- One Supervisor cluster per vSphere cluster that has Workload Management (Tanzu) enabled
+- Hosts supervisor cluster (vsphere) namespaces which provide rbac, policy and resource allocations for developer teams
+- Runs Cluster API and VMware Tanzu controllers/operators
+- Runs VM Service, Network Service and Storage Service compnents
+- Considered part of the infrastructure
+
+When operators or developers need to authenticate to Tanzu to create or access Tanzu Kubernetes Grid clusters they will authenticate to the supervisor cluster API for the cluster they are working with.  The Supervisor cluster uses Identity souces configured in vCenter SSO to provide Kubernetes authentication.
 
 ### High Level Workflow
 
@@ -103,35 +115,16 @@ The Supervisor Cluster API hosts a webpage you can use to directly download the 
 
     ![alt text](/assets/download.png)
 
-## The Supervisor Cluster
-
-Once you enable Tanzu Kubernetes Grid Service (TKGs) in vSphere 7 a new Namespaces resource object is created along with the Supervisor cluster.  The Supervisor cluster is a group of 3 virtual machines running Kubernetes and is the control plane for the vSphere Cluster where TKGs was enabled.  
-
-- One Supervisor cluster per vSphere cluster that has Workload Management (Tanzu) enabled (as of 7.0u2
-- Hosts vSphere namespaces which provide rbac, policy and resource allocations for developer teams
-- Cluster API and VMware Tanzu controllers/operators run on hosted on Supervisor Cluster
-- VM Service, Network Service and Storage Service Operators
-- Considered part of the infrastructure
-
-When operators or developers need to authenticate to Tanzu to create or access Tanzu Kubernetes Grid clusters they will authenticate to the supervisor cluster API for the cluster they are working with.  The Supervisor cluster uses Identity souces configured in vCenter SSO to provide Kubernetes authentication.
 
 ## Working with vSphere Namespaces
 
-vSphere Namespaces are created through vCenter UI and run the Supervisor Cluster.  You can use vSphere Namespaces as a boundry for application, application teams, lines of businesses or however you want separate permissions.  Now that Tanzu has been enabled on a vSphere cluster the next step is to create a vSphere Namespace.
+vSphere Namespaces are created on the Supervisor Cluster.  You can use vSphere Namespaces as a boundry for application, application teams, lines of businesses or however you want separate permissions.
 
 https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-177C23C4-ED81-4ADD-89A2-61654C18201B.html
 
-### High Level Workflow
-1. Infrastructure Operator creates vSphere Namespace in vCenter UI
-2. Developer authenticates to the Supervisor Cluster via kubectl cli
-3. Developer changes context to the desired vSphere Namespace via kubectl cli
-4. Developer creates Tanzu Kubernetes Grid (TKG) workload cluster using kubectl and cluster.yaml
-5. Developer authenticates to new TKG cluster
-6. Developer changes kubectl context to TKG cluster and deploys applications
-
 ### Creating vSphere Namespace
 
-1. In vCenter, Select the vSphere cluster with Tanzu enabled in the left pane
+1. Select the vSphere cluster with Tanzu enabled in the left pane
 2. Select `Namespaces` from the right horizontal menu
 3. Click `New Namespace`
 4. Select the vSphere cluster with Tanzu enable and give the namespace a name using lowercase letters and numbers (i.e app01)
@@ -141,15 +134,11 @@ https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-177
 
 ### Authentication to Supervisor Cluster
 
-To authenticate to the supervisor use the kubectl cli along with the kubectl-vsphere plugin.  You can enter `kubectl vsphere login` without anything else to see all of the parameters
+To authenticate to the supervisor use the kubectl with the kubectl-vsphere plugin.  You can enter `kubectl vsphere login` without anything else to see all of the parameters
 
 `kubectl vsphere login --server {supervisor cluster ip} -u administrator@vsphere.local --insecure-skip-tls-verify`
 
-You can determine your supervisor cluster control plane IP [here](#Determine the Supervisor Cluster Kubernetes API Address)
-
-alternately you can use the `sc-auth.sh` script in the `/manifests` directory.  Edit the script with the appropriate supervisor cluster control plane IP and username.
-
-You will the see the supervisor cluster context as well as any vSphere namespaces the account you logged in with has access to
+You will the supervisor cluster context as well as any vSphere namespaces the account you logged in with has access to
 
    ![alt text](/assets/vsphere-login.png)
 
@@ -157,11 +146,12 @@ You will the see the supervisor cluster context as well as any vSphere namespace
 
 In the screenshot from the former section you will see a number of contexts listed.
 
-- 10.0.103.20 - This is the supervisor cluster context.  If your user is a member of the vsphere.local admin group, You can view system namespaces, cluster API objects, controllers and pods.  You cannot create/delete or change most objects in the supervisor cluster context.  
-- app01, infra-app - these are vsphere namespaces and can represent applications, developement teams or whatever schema you use to create an RBAC and resource boundary for teams accessing Tanzu
+- 10.0.103.20 - This is the supervisor cluster context.  You can view system namespaces, cluster API objects, controllers and pods.  You cannot create/delete or change most objects in the supervisor cluster context.  
+- app01, demo-app-01, infra-app - You can change your context into any of the namespaces you have access to and create TKG clusters or deploy vSphere Pods (NSX-T required for vSphere Pods)
 
-Change context to vSphere namespace
-`kubectl config use-context app01`
+Change context to vSphere namespace 
+
+`kubectl config use-context demo-app-01`
 
 ### Important kubectl commands to explore Namespace
 
@@ -193,10 +183,9 @@ Tanzu Kubernetes Grid (TKG) workload clusters are where you development teams wi
 
 ### Create TKG cluster from manifest
 
-Change into vSphere Namespace you will create TKG cluster in
-`kubectl config use-context app01`
+Change into vSphere Namespace 
 
-Apply cluster manifest
+`kubectl config use-context app01`
 `kubectl apply -f /manifests/tkg-app-01.yaml`
 
 ### Examine cluster progress and objects
@@ -204,40 +193,8 @@ Apply cluster manifest
 `kubectl get tkc`
 `kubectl describe tkc {clustername}`
 
-https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-3040E41B-8A54-4D23-8796-A123E7CAE3BA.html
+https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-6B21C37B-91ED-4218-B7B8-C40417ADBF8A.html
 
-### Authenticate to TKG Workload Cluster
-
-Once the cluster status is Running, Use the `kubectl vsphere login` command to log into TKG workload clusters.  If your user has `edit` in the vsphere namespace you will automatically mapped to `cluster-admin` role in the TKG Workload cluster.  If you have `view` you will someone with admin rights on the cluster to map your user/group to a  Kubernetes role.
-
-`kubectl vsphere login --server {supervisor cluster ip} -u administrator@vsphere.local --insecure-skip-tls-verify --tanzu-kubernetes-cluster-namespace {cluster namespace} --tanzu-kubernetes-cluster-name {clustername}`
-
-   ![alt text](/assets/tkg-login.png)
-
-alternately you can use the `/manifests/cluster-auth.sh` script.  Edit the script with the appropriate supervisor cluster control plane IP and username.  Supply the TKG cluster namespace and TKG clustername when exectuting the script.
-
-` ./cluster-auth.sh app01 tkg-app-01`
-
-You will the see the supervisor cluster context as well as any vSphere namespaces the account you logged in with has access to
-
-### Change context to TKG Workload cluster
-
-`kubectl config use-context tkg-app-01`
-
-### Explore TKG Workload cluster
-
-`kubectl get nodes`
-`kubectl get ns`
-`kubectl get pods -A`
-
-### Apply PSP to TKG cluster after creation
-
-TKG ships with Pod Security Policies enabled so before deploying application you need to bind users to a PSP.  Here we will bind all authenticated users to the vmware-system-privileged PSP.
-
-`kubectl create clusterrolebinding default-tkg-admin-privileged-binding --clusterrole=psp:vmware-system-privileged --group=system:authenticated`
-
-You can also apply from mainifest
-`kubectl apply -f /manifests/psp.yaml`
 
 ## Working with TKG Workload Clusters
 
@@ -288,7 +245,25 @@ spec:
     version: v1.20
 ```
 
-https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-6B21C37B-91ED-4218-B7B8-C40417ADBF8A.html
+https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-A7A0BC51-F49D-4E08-B4DD-782D84CB3762.html#GUID-A7A0BC51-F49D-4E08-B4DD-782D84CB3762
+
+### Authenticating to TKG Workload cluster
+
+Use the `kubectl vsphere login` command to log into TKG workload clusters.  If your user has `edit` in the vsphere namespace you will automatically mapped to `cluster-admin` role in the TKG Workload cluster.  If you have `view` you will need to map your user or group to a Kubernetes role.
+
+`kubectl vsphere login --server 10.0.103.20 -u administrator@vsphere.local --insecure-skip-tls-verify --tanzu-kubernetes-cluster-name {clustername} --tanzu-kubernetes-cluster-namespace {cluster namespace}`
+
+   ![alt text](/assets/tkg-login.png)
+
+### Change context to TKG Workload cluster
+
+`kubectl config use-context tkg-app-01`
+
+### Explore TKG Workload cluster
+
+`kubectl get nodes`
+`kubectl get ns`
+`kubectl get pods -A`
 
 
 ## Deploy Test Applications
@@ -297,22 +272,22 @@ https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-6B2
 
 Simple test application.  From Joe Beda's "Kubernetes Up and Running"
 
-Deployment (3 replicas)
-```
-kubectl apply -f kuard/kuard.yaml
-```
-
 Run as Pod
 ```
 kubectl run --restart=Never --image=gcr.io/kuar-demo/kuard-amd64:blue kuard
 kubectl port-forward kuard 8080:8080
 ```
 
+Deployment (3 replicas)
+```
+kubectl apply -f manifests/kuard.yaml
+```
+
 ### Busybox
 
 Deploy Pod
 ```
-kubectl apply -f busybox/busybox.yaml
+kubectl apply -f manifests/busybox.yaml
 ```
 
 Run Pod
@@ -326,7 +301,7 @@ Simple pod that includes ping, curl, wget, traceroute commands
 
 Deploy Pod
 ```
-kubectl apply -f tinytools/tinytools.yaml
+kubectl apply -f manifests/tinytools.yaml
 ```
 
 Run as Pod
@@ -343,6 +318,6 @@ kubectl exec -ti tinytools -- sh
 
 Simple Nginx deployment.  2 replicas, service type LoadBalancer
 ```
-kubectl apply -f nginx/nginx.yaml
+kubectl apply -f manifests/nginx.yaml
 ```
 Yon get the nginx service IP using `kubectl get svc`

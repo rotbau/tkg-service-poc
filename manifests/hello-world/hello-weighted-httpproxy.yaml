@@ -1,0 +1,15 @@
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: weight-shifting
+spec:
+  virtualhost:
+    fqdn: hello.rtbsystems.com
+  routes:
+    - services:
+        - name: helloworld-v1-10
+          port: 80
+          weight: 80
+        - name: helloworld-v1-11
+          port: 80
+          weight: 20

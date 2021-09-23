@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helloworld-v1.10
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: helloworld
+      version: "1.10"
+  template:
+    metadata:
+      labels:
+        app: helloworld
+        version: "1.10"
+    spec:
+      containers:
+      - name: k8s-demo
+#        image: wardviaene/k8s-demo:latest
+        image: rotbau/k8s-demo:v1.10
+        ports:
+        - name: nodejs-port
+          containerPort: 3000
+      imagePullSecrets:
+      - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helloworld-v1-10
+spec:
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  type: ClusterIP  # Set to NodePort for AVI ingress
+  selector:
+    app: helloworld
+    version: "1.10"

@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: helloworld-ingress
+spec:
+  rules:
+  - host: hello.ako.rtbsystems.com
+    http:
+      paths:
+      -  backend:
+           serviceName: helloworld-v1-11
+           servicePort: 80
