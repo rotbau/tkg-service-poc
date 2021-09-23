@@ -15,7 +15,7 @@ Assumptions:
 3. [Working with vSphere Namespaces](#working-with-vsphere-namespaces)
 4. [Creating TKG Workload Clusters](#creating-tkg-workload-clusters)
 5. [Working with TKG Workload Clusters](#working-with-tkg-workload-clusters)
-6. [Deploy Test Applications](#deploying-test-applications)
+6. [Deploy Test Applications](#deploy-test-applications)
 
 
 ## Documentation
@@ -207,9 +207,16 @@ Apply cluster manifest
 
 https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-3040E41B-8A54-4D23-8796-A123E7CAE3BA.html
 
+When cluster status phase is `running` the cluster creation is complete
+
+![alt text](/assets/tkc-status.png)
+
+
+## Working with TKG Workload Clusters
+
 ### Authenticate to TKG Workload Cluster
 
-Once the cluster status is Running, Use the `kubectl vsphere login` command to log into TKG workload clusters.  If your user has `edit` in the vsphere namespace you will automatically mapped to `cluster-admin` role in the TKG Workload cluster.  If you have `view` you will someone with admin rights on the cluster to map your user/group to a  Kubernetes role.
+Once the cluster phase is running, Use the `kubectl vsphere login` command to log into TKG workload clusters.  If your user has `edit` in the vsphere namespace you will automatically mapped to `cluster-admin` role in the TKG Workload cluster.  If you have `view` you will someone with admin rights on the cluster to map your user/group to a  Kubernetes role.
 
 `kubectl vsphere login --server {supervisor cluster ip} -u administrator@vsphere.local --insecure-skip-tls-verify --tanzu-kubernetes-cluster-namespace {cluster namespace} --tanzu-kubernetes-cluster-name {clustername}`
 
@@ -241,8 +248,6 @@ TKG ships with Pod Security Policies enabled so before deploying application you
 
 You can also apply from mainifest
 `kubectl apply -f /manifests/psp.yaml`
-
-## Working with TKG Workload Clusters
 
 ### Scale TKG cluster
 
@@ -294,7 +299,7 @@ spec:
 https://docs.vmware.com/en/VMware-vSphere/7.0/vmware-vsphere-with-tanzu/GUID-6B21C37B-91ED-4218-B7B8-C40417ADBF8A.html
 
 
-## Deploying Test Applications
+## Deploy Test Applications
 
 ### Kuard
 
