@@ -219,7 +219,7 @@ alternately you can use the `/manifests/cluster-auth.sh` script.  Edit the scrip
 
 ` ./cluster-auth.sh app01 tkg-app-01`
 
-You can determine your supervisor cluster control plane IP [here](#Determine-the-Supervisor-Determine-the-Supervisor-Cluster-Kubernetes-API-Address)
+You can determine your supervisor cluster control plane IP [here](#determine-the-supervisor-cluster-kubernetes-api-address)
 
 You will the see the supervisor cluster context as well as any vSphere namespaces the account you logged in with has access to
 
